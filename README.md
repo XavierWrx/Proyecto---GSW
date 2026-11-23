@@ -1,4 +1,3 @@
-# Proyecto---GSW
 # Proyecto GSW - Fase 2
 
 ## Portal de Tutorías Gratuitas
