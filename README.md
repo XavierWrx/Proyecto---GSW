@@ -1,8 +1,13 @@
+# Proyecto---GSW
 # Proyecto GSW - Fase 2
 
 ## Portal de Tutorías Gratuitas
 
 Nuestro proyecto es un portal de tutorías gratis para estudiantes de bachillerato en Matemáticas, Ciencias e Inglés.
+
+**Integrantes:** Wendy Yessenia Flores Reyes, Anderson Saul Maravilla Callejas, Rodrigo Xavier Mejía Bermudez, Emerson Raúl Ventura Castillo y Javier Alexander Barahona Mejía.
+
+**¿A quién ayuda y qué problema resuelve?** Ayuda a estudiantes de bachillerato con pocos recursos y a universitarios que quieren dar tutorías como voluntariado. Resuelve que quien necesita refuerzo no sabe con quién acudir y los tutores no tienen un medio ordenado para ofrecer su ayuda.
 
 En esta fase tenemos la base funcionando: Apache sirve la página por HTTPS y las peticiones a /api se mandan con ProxyPass al backend hecho en Express con TypeScript.
 
@@ -30,15 +35,35 @@ Cómo funciona:
 4. Express busca los tutores (y los filtra por materia si se manda el parámetro) y devuelve un JSON.
 5. Apache le regresa esa respuesta al navegador.
 
+El mismo flujo en diagrama (se ve renderizado en GitHub):
+
+```mermaid
+flowchart LR
+    N[Navegador] -- HTTPS 443 --> A[Apache<br/>tutorias.local]
+    A -- "/ (estático)" --> P[public/<br/>index.html + styles.css]
+    A -- "ProxyPass /api" --> E[Express + TypeScript<br/>localhost:9090]
+    E --> D[(Datos de tutores)]
+    A -. "puerto 80: redirige" .-> N
+```
+
 ## Archivos del proyecto
 
-- `src/servidor.ts`: el backend con Express y la ruta /api/tutores
-- `public/index.html`: la página que sirve Apache
-- `config/tutorias.local.conf`: virtual host para el puerto 80
+- `src/servidor.ts`: el backend con Express y las rutas de la API
+- `public/index.html` y `public/styles.css`: la página y sus estilos, que sirve Apache
+- `docs/capturas/`: capturas de evidencia (candado HTTPS y API funcionando)
+- `config/tutorias.local.conf`: virtual host para el puerto 80 (redirige a HTTPS)
 - `config/tutorias.local-ssl.conf`: virtual host para el puerto 443 con SSL
 - `.gitignore`: para no subir node_modules, dist ni la llave privada del certificado
 
 ## La API
+
+| Ruta | Descripción |
+|---|---|
+| `GET /api/salud` | Estado del servicio |
+| `GET /api/materias` | Materias disponibles |
+| `GET /api/tutores` | Todos los tutores |
+| `GET /api/tutores?materia=...` | Tutores de una materia |
+| `GET /api/tutores/:id` | Ruta dinámica: un tutor por su id (devuelve 404 en JSON si no existe) |
 
 `GET /api/tutores` devuelve todos los tutores.
 
@@ -119,6 +144,12 @@ En los archivos de config/ el DocumentRoot dice `[DIRECCION DE PROYECTO]`, hay q
 sed -i 's#\[DIRECCION DE PROYECTO\]#/var/www/Proyecto---GSW/public#g' config/*.conf
 ```
 
+Apache necesita permiso de lectura sobre los archivos de `public/`:
+
+```bash
+chmod 644 public/index.html public/*.css
+```
+
 Luego copiamos los archivos y activamos los módulos y los sitios:
 
 ```bash
@@ -144,10 +175,19 @@ En Windows hay que abrir el bloc de notas como administrador y editar `C:\Window
 - https://tutorias.local : tiene que cargar la página con el candado
 - https://tutorias.local/api/tutores : tiene que mostrar el JSON de los tutores
 - https://tutorias.local/api/tutores?materia=ciencias : solo el tutor de ciencias
+- https://tutorias.local/api/tutores/2 : un solo tutor por su id (ruta dinámica)
+- http://tutorias.local : tiene que redirigir a https
+
+Para comprobar desde la terminal que Apache entrega el HTML y el CSS:
+
+```bash
+curl -s https://tutorias.local/ | head -n 15
+curl -s https://tutorias.local/styles.css | head -n 5
+```
 
 ## Evidencias
 
-Las capturas del sitio con el candado y de la API funcionando por el proxy van en la carpeta `docs/capturas/` (pendiente).
+Las capturas del sitio con el candado y de la API funcionando por el proxy van en la carpeta [`docs/capturas/`](docs/capturas/) (pendiente). Capturas que pide la actividad: el sitio con el candado sin advertencias, la API respondiendo a través de Apache, y la terminal con Express corriendo.
 
 ## Lo que falta para las siguientes fases
 
