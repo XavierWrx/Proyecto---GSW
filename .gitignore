@@ -3,3 +3,6 @@ dist/
 *.key
 *key.pem
 .env
+*.p12
+*.pfx
+.DS_Store
